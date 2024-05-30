@@ -26,7 +26,7 @@ to_image = transforms.ToPILImage()
 trainset = MNIST(root='./data/', train=True, download=True, transform=transform)
 trainloader = DataLoader(trainset, batch_size=64, shuffle=True)
 
-device = 'cuda'
+device = "cuda" if torch.cuda.is_available() else "cpu"
 
 class Generator(nn.Module):
     def __init__(self):
@@ -112,6 +112,7 @@ test_noise = noise(64)
 generator.train()
 critic.train()
 for epoch in range(num_epochs):
+    print(f'{epoch = }')
     g_error = 0.0
     c_error = 0.0
     for i, data in enumerate(trainloader):
@@ -131,8 +132,10 @@ for epoch in range(num_epochs):
         g_losses.append(g_error)
         c_losses.append(c_error)
         plt.clf()
-        plt.plot(g_losses, label='Generator Losses')
-        plt.plot(c_losses, label='Critic Losses')
+        # plt.plot(g_losses, label='Generator Losses')
+        # plt.plot(c_losses, label='Critic Losses')
+        plt.plot([loss.detach().cpu().numpy() for loss in g_losses], label='Generator Losses')
+        plt.plot([loss.detach().cpu().numpy() for loss in c_losses], label='Critic Losses')
         plt.legend()
         plt.savefig('loss.png')
         imageio.mimsave('progress.gif', [np.array(i) for i in images])
